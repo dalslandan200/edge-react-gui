@@ -3,7 +3,7 @@
 import type { AbcSpendTarget, EdgeMetadata, EdgeSpendInfo, EdgeTransaction } from 'edge-core-js'
 
 import { STANDARD_FEE } from '../../../../constants/indexConstants'
-import { convertCurrency } from '../../../Core/Account/api.js'
+import { convertCurrency } from '../../selectors.js'
 import { getAccount } from '../../../Core/selectors.js'
 import type { State } from '../../../ReduxTypes'
 import { convertNativeToExchange } from '../../../utils.js'
@@ -157,7 +157,7 @@ export const getAuthRequired = (state: State, spendInfo: EdgeSpendInfo): AuthTyp
   const isoFiatCurrencyCode = state.ui.settings.defaultIsoFiat
   const nativeToExchangeRatio = getExchangeDenomination(state, currencyCode).multiplier
   const exchangeAmount = convertNativeToExchange(nativeToExchangeRatio)(nativeAmount)
-  const fiatAmount = convertCurrency(account, currencyCode, isoFiatCurrencyCode, parseFloat(exchangeAmount))
+  const fiatAmount = convertCurrency(state, currencyCode, isoFiatCurrencyCode, parseFloat(exchangeAmount))
   const exceedsLimit = fiatAmount >= spendingLimits.transaction.amount
 
   return exceedsLimit ? 'pin' : 'none'

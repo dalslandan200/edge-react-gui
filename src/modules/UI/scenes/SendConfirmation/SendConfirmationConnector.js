@@ -3,10 +3,10 @@
 import { errorNames } from 'edge-core-js'
 import { connect } from 'react-redux'
 
-import { getCurrencyConverter, getExchangeRate } from '../../../Core/selectors.js'
+import { getCurrencyConverter  } from '../../../Core/selectors.js'
 import type { Dispatch, State } from '../../../ReduxTypes'
 import { convertNativeToExchange } from '../../../utils'
-import { getExchangeDenomination, getSelectedCurrencyCode, getSelectedWallet } from '../../selectors.js'
+import { getExchangeDenomination, getSelectedCurrencyCode, getSelectedWallet, getExchangeRate, convertCurrency } from '../../selectors.js'
 import { getDisplayDenomination, getExchangeDenomination as settingsGetExchangeDenomination } from '../../Settings/selectors.js'
 import { newPin, reset, signBroadcastAndSave, uniqueIdentifierUpdated, updateAmount, updateSpendPending } from './action.js'
 import { activated as uniqueIdentifierModalActivated } from './components/UniqueIdentifierModal/UniqueIdentifierModalActions.js'
@@ -26,11 +26,11 @@ const mapStateToProps = (state: State): SendConfirmationStateProps => {
   const isoFiatCurrencyCode = guiWallet.isoFiatCurrencyCode
   const exchangeDenomination = settingsGetExchangeDenomination(state, currencyCode)
   const balanceInCryptoDisplay = convertNativeToExchange(exchangeDenomination.multiplier)(balanceInCrypto)
-  const balanceInFiat = currencyConverter.convertCurrency(currencyCode, isoFiatCurrencyCode, balanceInCryptoDisplay)
+  fiatPerCrypto = getExchangeRate(state, currencyCode, isoFiatCurrencyCode)  
+  const balanceInFiat = fiatPerCrypto *  balanceInCryptoDisplay
 
   if (guiWallet) {
     const isoFiatCurrencyCode = guiWallet.isoFiatCurrencyCode
-    fiatPerCrypto = getExchangeRate(state, currencyCode, isoFiatCurrencyCode)
     secondaryExchangeCurrencyCode = isoFiatCurrencyCode
   }
 
@@ -53,7 +53,7 @@ const mapStateToProps = (state: State): SendConfirmationStateProps => {
 
   const uniqueIdentifier = sceneState.parsedUri.uniqueIdentifier
   const destination = sceneState.destination
-
+  const exchangeRates = state.ui.exchangeRates
   const out = {
     balanceInCrypto,
     balanceInFiat,
@@ -61,6 +61,7 @@ const mapStateToProps = (state: State): SendConfirmationStateProps => {
     currencyConverter,
     destination,
     errorMsg,
+    exchangeRates,
     fiatCurrencyCode: guiWallet.fiatCurrencyCode,
     fiatPerCrypto,
     forceUpdateGuiCounter: getForceUpdateGuiCounter(state),

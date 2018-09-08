@@ -112,3 +112,30 @@ export const getSceneState = (state: State, sceneKey: string) => {
   const sceneState = getScenesState(state)[sceneKey]
   return sceneState
 }
+
+export const getExchangeRate = (state: State, fromCurrencyCode: string,  toCurrencyCode: string) => {
+  const fromCurrencyCleaned = fromCurrencyCode.replace('iso:')
+  const toCurrencyCleaned = fromCurrencyCode.replace('iso:')
+  const exchangeRates = state.ui.exchangeRates
+  if (!exchangeRates) return 0 // handle case of exchange rates not ready yet
+  const rateKey = `${fromCurrencyCleaned}_${toCurrencyCleaned}`
+  let rate = exchangeRates[rateKey]
+  // if (fromCurrencyCleaned === toCurrencyCleaned) rate = 1 // handle case that occurs while app is loading
+  return rate
+}
+
+export const convertCurrency = (state: State, fromCurrencyCode: string, toCurrencyCode: string, amount: number = 1) => {
+  const exchangeRate = getExchangeRate(state, fromCurrencyCode, toCurrencyCode)
+  const convertedAmount = amount * exchangeRate
+  return convertedAmount
+}
+
+export const convertCurrencyFromExchangeRates = (exchangeRates: object, fromCurrencyCode: string, toCurrencyCode: string, amount: number) => {
+  const fromCurrencyCleaned = fromCurrencyCode.replace('iso:')
+  const toCurrencyCleaned = fromCurrencyCode.replace('iso:')
+  if (!exchangeRates) return 0 // handle case of exchange rates not ready yet
+  const rateKey = `${fromCurrencyCleaned}_${toCurrencyCleaned}`
+  let rate = exchangeRates[rateKey]
+  const convertedAmount = amount * rate
+  return convertedAmount
+}

@@ -116,7 +116,7 @@ export type SubcategorySearchResultData = {
 }
 
 export type CurrencyConverter = {
-  convertCurrency: (currencyCode: string, isoFiatCurrencyCode: string, balanceInCryptoDisplay: string) => number
+  convertCurrency: (state: State, currencyCode: string, isoFiatCurrencyCode: string, balanceInCryptoDisplay: string) => number
 }
 
 export const emptyGuiWallet: GuiWallet = {

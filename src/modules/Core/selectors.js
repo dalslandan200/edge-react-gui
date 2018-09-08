@@ -4,6 +4,7 @@ import type { EdgeCurrencyWallet } from 'edge-core-js'
 
 import type { State } from '../ReduxTypes'
 import { getDefaultFiat, getDefaultIsoFiat } from '../UI/Settings/selectors.js'
+import { convertCurrency } from '../UI/selectors.js'
 
 export const getCore = (state: State) => state.core
 
@@ -51,15 +52,9 @@ export const getCurrencyConverter = (state: State) => {
   return currencyConverter
 }
 
-export const getExchangeRate = (state: State, fromCurrencyCode: string, toCurrencyCode: string) => {
-  const currencyConverter = getCurrencyConverter(state)
-  const exchangeRate = currencyConverter.convertCurrency(fromCurrencyCode, toCurrencyCode, 1)
-  return Promise.resolve(exchangeRate)
-}
-
 export const getFakeExchangeRate = (state: State, fromCurrencyCode: string, toCurrencyCode: string) => {
   const currencyConverter = getCurrencyConverter(state)
-  const exchangeRate = currencyConverter.convertCurrency(fromCurrencyCode, toCurrencyCode, 1)
+  const exchangeRate = convertCurrency(state, fromCurrencyCode, toCurrencyCode, 1)
   return exchangeRate + Math.random() * 10
 }
 
@@ -100,10 +95,10 @@ export const buildExchangeRates = async state => {
     const walletIsoFiat = wallet.fiatCurrencyCode
     const walletFiat = wallet.fiatCurrencyCode.replace('iso:', '')
     const currencyCode = wallet.currencyInfo.currencyCode // should get GUI or core versions?
-    data[`${walletFiat}_${currencyCode}`] = getExchangeRate(state, walletIsoFiat, currencyCode)
-    data[`${currencyCode}_${walletFiat}`] = getExchangeRate(state, currencyCode, walletIsoFiat)
-    data[`${accountFiat}_${currencyCode}`] = getExchangeRate(state, accountIsoFiat, currencyCode)
-    data[`${currencyCode}_${accountFiat}`] = getExchangeRate(state, currencyCode, accountIsoFiat)
+    data[`${walletFiat}_${currencyCode}`] = fetchExchangeRateFromCore(state, walletIsoFiat, currencyCode)
+    data[`${currencyCode}_${walletFiat}`] = fetchExchangeRateFromCore(state, currencyCode, walletIsoFiat)
+    data[`${accountFiat}_${currencyCode}`] = fetchExchangeRateFromCore(state, accountIsoFiat, currencyCode)
+    data[`${currencyCode}_${accountFiat}`] = fetchExchangeRateFromCore(state, currencyCode, accountIsoFiat)
     // add them to the list of promises to resolve
     promiseArray.push(
       data[`${walletFiat}_${currencyCode}`],
@@ -115,10 +110,10 @@ export const buildExchangeRates = async state => {
     exchangeRateKeys.push(`${walletFiat}_${currencyCode}`, `${currencyCode}_${walletFiat}`, `${accountFiat}_${currencyCode}`, `${currencyCode}_${accountFiat}`)
     // now add tokens, if they exist
     for (const tokenCode in wallet.balances) {
-      data[`${walletFiat}_${tokenCode}`] = getExchangeRate(state, walletIsoFiat, tokenCode)
-      data[`${tokenCode}_${walletFiat}`] = getExchangeRate(state, tokenCode, walletIsoFiat)
-      data[`${accountFiat}_${tokenCode}`] = getExchangeRate(state, accountIsoFiat, tokenCode)
-      data[`${tokenCode}_${accountFiat}`] = getExchangeRate(state, tokenCode, accountIsoFiat)
+      data[`${walletFiat}_${tokenCode}`] = fetchExchangeRateFromCore(state, walletIsoFiat, tokenCode)
+      data[`${tokenCode}_${walletFiat}`] = fetchExchangeRateFromCore(state, tokenCode, walletIsoFiat)
+      data[`${accountFiat}_${tokenCode}`] = fetchExchangeRateFromCore(state, accountIsoFiat, tokenCode)
+      data[`${tokenCode}_${accountFiat}`] = fetchExchangeRateFromCore(state, tokenCode, accountIsoFiat)
       promiseArray.push(
         data[`${walletFiat}_${tokenCode}`],
         data[`${tokenCode}_${walletFiat}`],
@@ -134,4 +129,10 @@ export const buildExchangeRates = async state => {
   }
   console.log('rates is: ', data)
   return data
+}
+
+export const fetchExchangeRateFromCore = (state: State, fromCurrencyCode: string, toCurrencyCode: string) => {
+  const currencyConverter = getCurrencyConverter(state)
+  const exchangeRate = currencyConverter.convertCurrency(fromCurrencyCode, toCurrencyCode, 1)
+  return Promise.resolve(exchangeRate)
 }

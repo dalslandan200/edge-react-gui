@@ -12,6 +12,7 @@ import { intl } from '../../../../locales/intl'
 import s from '../../../../locales/strings.js'
 import type { CurrencyConverter, GuiCurrencyInfo, GuiDenomination } from '../../../../types'
 import { convertNativeToDisplay, convertNativeToExchange, decimalOrZero, getDenomFromIsoCode } from '../../../utils.js'
+import { convertCurrencyFromExchangeRates } from '../../selectors.js'
 import { PrimaryButton } from '../../components/Buttons/PrimaryButton.ui.js'
 import ExchangeRate from '../../components/ExchangeRate/index.js'
 import type { ExchangedFlipInputAmounts } from '../../components/FlipInput/ExchangedFlipInput2.js'
@@ -275,7 +276,7 @@ export class SendConfirmation extends Component<Props, State> {
   }
 
   networkFeeSyntax = () => {
-    const { networkFee, parentNetworkFee, parentDisplayDenomination } = this.props
+    const { networkFee, parentNetworkFee, parentDisplayDenomination, exchangeRates } = this.props
     if (!networkFee && !parentNetworkFee) return ''
 
     const primaryInfo: GuiCurrencyInfo = {
@@ -308,7 +309,8 @@ export class SendConfirmation extends Component<Props, State> {
       const fiatFeeSymbol = secondaryInfo.displayDenomination.symbol ? secondaryInfo.displayDenomination.symbol : ''
       const exchangeConvertor = convertNativeToExchange(this.props.parentExchangeDenomination.multiplier)
       const cryptoFeeExchangeAmount = exchangeConvertor(parentNetworkFee)
-      const fiatFeeAmount = this.props.currencyConverter.convertCurrency(
+      const fiatFeeAmount = convertCurrencyFromExchangeRates(
+        exchangeRates,
         this.props.parentExchangeDenomination.name,
         secondaryInfo.exchangeCurrencyCode,
         cryptoFeeExchangeAmount
@@ -327,7 +329,7 @@ export class SendConfirmation extends Component<Props, State> {
       const fiatFeeSymbol = secondaryInfo.displayDenomination.symbol ? secondaryInfo.displayDenomination.symbol : ''
       const exchangeConvertor = convertNativeToExchange(primaryInfo.exchangeDenomination.multiplier)
       const cryptoFeeExchangeAmount = exchangeConvertor(networkFee)
-      const fiatFeeAmount = this.props.currencyConverter.convertCurrency(this.props.currencyCode, secondaryInfo.exchangeCurrencyCode, cryptoFeeExchangeAmount)
+      const fiatFeeAmount = convertCurrencyFromExchangeRates(exchangeRates, this.props.currencyCode, secondaryInfo.exchangeCurrencyCode, cryptoFeeExchangeAmount)
       const fiatFeeAmountString = fiatFeeAmount.toFixed(2)
       const fiatFeeAmountPretty = bns.toFixed(fiatFeeAmountString, 2, 2)
       const fiatFeeString = `${fiatFeeSymbol} ${fiatFeeAmountPretty}`
