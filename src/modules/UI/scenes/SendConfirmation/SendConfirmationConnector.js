@@ -53,7 +53,7 @@ const mapStateToProps = (state: State): SendConfirmationStateProps => {
 
   const uniqueIdentifier = sceneState.parsedUri.uniqueIdentifier
   const destination = sceneState.destination
-  const exchangeRates = state.ui.exchangeRates
+  const exchangeRates = state.exchangeRates
   const out = {
     balanceInCrypto,
     balanceInFiat,

@@ -127,6 +127,7 @@ export const buildExchangeRates = async state => {
   for (let i = 0; i < rates.length; i++) {
     data[exchangeRateKeys[i]] = rates[i]
   }
+  data.randomNumber = Math.random()
   console.log('rates is: ', data)
   return data
 }

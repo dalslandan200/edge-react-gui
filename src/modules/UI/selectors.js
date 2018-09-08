@@ -114,12 +114,11 @@ export const getSceneState = (state: State, sceneKey: string) => {
 }
 
 export const getExchangeRate = (state: State, fromCurrencyCode: string,  toCurrencyCode: string) => {
-  const fromCurrencyCleaned = fromCurrencyCode.replace('iso:')
-  const toCurrencyCleaned = fromCurrencyCode.replace('iso:')
-  const exchangeRates = state.ui.exchangeRates
-  if (!exchangeRates) return 0 // handle case of exchange rates not ready yet
+  const fromCurrencyCleaned = fromCurrencyCode.replace('iso:', '')
+  const toCurrencyCleaned = toCurrencyCode.replace('iso:', '')
+  const exchangeRates = state.exchangeRates
   const rateKey = `${fromCurrencyCleaned}_${toCurrencyCleaned}`
-  let rate = exchangeRates[rateKey]
+  let rate = exchangeRates[rateKey] ? exchangeRates[rateKey] : 0
   // if (fromCurrencyCleaned === toCurrencyCleaned) rate = 1 // handle case that occurs while app is loading
   return rate
 }

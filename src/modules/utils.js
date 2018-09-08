@@ -269,7 +269,6 @@ export const calculateWalletFiatFromCrypto = (wallet: GuiWallet, state: State): 
   const currencyCode = wallet.currencyCode
   const nativeBalance = wallet.nativeBalances[currencyCode]
   const settings = state.ui.settings
-  const currencyConverter = getCurrencyConverter(state)
   if (!nativeBalance || nativeBalance === '0') return '0'
   const denominations = settings[currencyCode].denominations
   const exchangeDenomination = denominations.find(denomination => denomination.name === currencyCode)

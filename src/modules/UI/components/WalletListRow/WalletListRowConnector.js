@@ -18,8 +18,7 @@ const mapStateToProps = (state: State, ownProps: WalletListRowOwnProps): WalletL
     displayDenomination,
     exchangeDenomination,
     fiatBalance,
-    settings,
-    currencyConverter
+    settings
   }
 }
 const mapDispatchToProps = (dispatch: Dispatch): WalletListRowDispatchProps => {

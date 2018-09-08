@@ -5,7 +5,7 @@ import type { Action } from '../ReduxTypes'
 import * as ACTION from './action.js'
 
 type ExchangeRateState = ?number
-const exchangeRatesReducer = (state = {}, action) => {
+const exchangeRatesReducer = (state = {randomNumber: 0}, action) => {
   switch (action.type) {
     case ACTION.UPDATE_EXCHANGE_RATES:
       return action.data.exchangeRates
