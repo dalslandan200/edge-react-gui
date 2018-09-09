@@ -94,6 +94,7 @@ export const buildExchangeRates = async (state: State) => {
     const walletIsoFiat = wallet.fiatCurrencyCode
     const walletFiat = wallet.fiatCurrencyCode.replace('iso:', '')
     const currencyCode = wallet.currencyInfo.currencyCode // should get GUI or core versions?
+    // need to get both forward and backwards exchange rates for wallets & account fiats, for each parent currency AND each token
     data[`${walletFiat}_${currencyCode}`] = fetchExchangeRateFromCore(state, walletIsoFiat, currencyCode)
     data[`${currencyCode}_${walletFiat}`] = fetchExchangeRateFromCore(state, currencyCode, walletIsoFiat)
     data[`${accountFiat}_${currencyCode}`] = fetchExchangeRateFromCore(state, accountIsoFiat, currencyCode)
