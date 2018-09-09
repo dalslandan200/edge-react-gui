@@ -3,8 +3,8 @@
 import type { EdgeCurrencyWallet } from 'edge-core-js'
 
 import type { State } from '../ReduxTypes'
-import { getDefaultFiat, getDefaultIsoFiat } from '../UI/Settings/selectors.js'
 import { convertCurrency } from '../UI/selectors.js'
+import { getDefaultFiat, getDefaultIsoFiat } from '../UI/Settings/selectors.js'
 
 export const getCore = (state: State) => state.core
 
@@ -53,7 +53,6 @@ export const getCurrencyConverter = (state: State) => {
 }
 
 export const getFakeExchangeRate = (state: State, fromCurrencyCode: string, toCurrencyCode: string) => {
-  const currencyConverter = getCurrencyConverter(state)
   const exchangeRate = convertCurrency(state, fromCurrencyCode, toCurrencyCode, 1)
   return exchangeRate + Math.random() * 10
 }
@@ -82,7 +81,7 @@ export const getBalanceInCrypto = (state: State, walletId: string, currencyCode:
   return balance
 }
 
-export const buildExchangeRates = async state => {
+export const buildExchangeRates = async (state: State) => {
   const wallets = getWallets(state)
   const accountFiat = getDefaultFiat(state)
   const accountIsoFiat = getDefaultIsoFiat(state)
@@ -134,7 +133,7 @@ export const buildExchangeRates = async state => {
   return data
 }
 
-export const fetchExchangeRateFromCore = (state: State, fromCurrencyCode: string, toCurrencyCode: string) => {
+export const fetchExchangeRateFromCore = (state: State, fromCurrencyCode: string, toCurrencyCode: string): Promise<number> => {
   const currencyConverter = getCurrencyConverter(state)
   const exchangeRate = currencyConverter.convertCurrency(fromCurrencyCode, toCurrencyCode, 1)
   return Promise.resolve(exchangeRate)

@@ -4,14 +4,14 @@ import { bns, div, eq, gte, mul, toFixed } from 'biggystring'
 import type { EdgeCurrencyInfo, EdgeCurrencyWallet, EdgeDenomination, EdgeMetaToken, EdgeReceiveAddress, EdgeTransaction } from 'edge-core-js'
 import _ from 'lodash'
 import { Platform } from 'react-native'
-import { convertCurrency } from './UI/selectors.js'
+
 import { FIAT_CODES_SYMBOLS as currencySymbolMap, getSymbolFromCurrency } from '../constants/indexConstants.js'
 import { intl } from '../locales/intl.js'
 import borderColors from '../theme/variables/css3Colors'
 import type { CustomTokenInfo, ExchangeData, GuiDenomination, GuiWallet } from '../types'
-import { getCurrencyConverter } from './Core/selectors.js'
-import { getDefaultIsoFiat } from './UI/Settings/selectors.js'
 import type { State } from './ReduxTypes'
+import { convertCurrency } from './UI/selectors.js'
+import { getDefaultIsoFiat } from './UI/Settings/selectors.js'
 
 export const DIVIDE_PRECISION = 18
 
@@ -216,7 +216,6 @@ export const getCurrencyAccountFiatBalanceFromWallet = (wallet: GuiWallet, curre
   if (!exchangeDenomination) return '0'
   const nativeToExchangeRatio: string = exchangeDenomination.multiplier
   const cryptoAmount = parseFloat(convertNativeToExchange(nativeToExchangeRatio)(nativeBalance))
-  const currencyConverter = getCurrencyConverter(state)
   const unformattedFiatValue = convertCurrency(state, currencyCode, 'iso:' + settings.defaultFiat, cryptoAmount)
   const formattedFiatValue = intl.formatNumber(unformattedFiatValue, { toFixed: 2 })
   return formattedFiatValue || '0'
@@ -241,7 +240,6 @@ export const getCurrencyWalletFiatBalanceFromWallet = (wallet: GuiWallet, curren
   if (!exchangeDenomination) return '0'
   const nativeToExchangeRatio: string = exchangeDenomination.multiplier
   const cryptoAmount = parseFloat(convertNativeToExchange(nativeToExchangeRatio)(nativeBalance))
-  const currencyConverter = getCurrencyConverter(state)
   const unformattedFiatValue = convertCurrency(state, currencyCode, wallet.isoFiatCurrencyCode, cryptoAmount)
   const formattedFiatValue = intl.formatNumber(unformattedFiatValue, { toFixed: 2 })
   return formattedFiatValue || '0'
@@ -253,7 +251,6 @@ export const calculateSettingsFiatFromCrypto = (wallet: GuiWallet, state: State)
   const currencyCode = wallet.currencyCode
   const nativeBalance = wallet.nativeBalances[currencyCode]
   const settings = state.ui.settings
-  const currencyConverter = getCurrencyConverter(state)
   if (!nativeBalance || nativeBalance === '0') return '0'
   const denominations = settings[currencyCode].denominations
   const exchangeDenomination = denominations.find(denomination => denomination.name === currencyCode)

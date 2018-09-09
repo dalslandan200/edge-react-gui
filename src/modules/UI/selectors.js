@@ -113,12 +113,12 @@ export const getSceneState = (state: State, sceneKey: string) => {
   return sceneState
 }
 
-export const getExchangeRate = (state: State, fromCurrencyCode: string,  toCurrencyCode: string) => {
+export const getExchangeRate = (state: State, fromCurrencyCode: string, toCurrencyCode: string): number => {
   const fromCurrencyCleaned = fromCurrencyCode.replace('iso:', '')
   const toCurrencyCleaned = toCurrencyCode.replace('iso:', '')
   const exchangeRates = state.exchangeRates
   const rateKey = `${fromCurrencyCleaned}_${toCurrencyCleaned}`
-  let rate = exchangeRates[rateKey] ? exchangeRates[rateKey] : 0
+  const rate = exchangeRates[rateKey] ? exchangeRates[rateKey] : 0
   // if (fromCurrencyCleaned === toCurrencyCleaned) rate = 1 // handle case that occurs while app is loading
   return rate
 }
@@ -129,12 +129,12 @@ export const convertCurrency = (state: State, fromCurrencyCode: string, toCurren
   return convertedAmount
 }
 
-export const convertCurrencyFromExchangeRates = (exchangeRates: object, fromCurrencyCode: string, toCurrencyCode: string, amount: number) => {
-  const fromCurrencyCleaned = fromCurrencyCode.replace('iso:')
-  const toCurrencyCleaned = fromCurrencyCode.replace('iso:')
+export const convertCurrencyFromExchangeRates = (exchangeRates: { [string]: number }, fromCurrencyCode: string, toCurrencyCode: string, amount: number) => {
+  const fromCurrencyCleaned = fromCurrencyCode.replace('iso:', '')
+  const toCurrencyCleaned = fromCurrencyCode.replace('iso:', '')
   if (!exchangeRates) return 0 // handle case of exchange rates not ready yet
   const rateKey = `${fromCurrencyCleaned}_${toCurrencyCleaned}`
-  let rate = exchangeRates[rateKey]
+  const rate = exchangeRates[rateKey]
   const convertedAmount = amount * rate
   return convertedAmount
 }

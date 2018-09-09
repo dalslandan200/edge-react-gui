@@ -6,6 +6,7 @@ import * as ACTION from './action.js'
 
 type ExchangeRateState = ?number
 const exchangeRatesReducer = (state = {}, action) => {
+  if (!action.data) return state
   switch (action.type) {
     case ACTION.UPDATE_EXCHANGE_RATES:
       return action.data.exchangeRates

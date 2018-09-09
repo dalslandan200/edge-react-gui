@@ -3,11 +3,9 @@
 import type { AbcSpendTarget, EdgeMetadata, EdgeSpendInfo, EdgeTransaction } from 'edge-core-js'
 
 import { STANDARD_FEE } from '../../../../constants/indexConstants'
-import { convertCurrency } from '../../selectors.js'
-import { getAccount } from '../../../Core/selectors.js'
 import type { State } from '../../../ReduxTypes'
 import { convertNativeToExchange } from '../../../utils.js'
-import { getSceneState, getSelectedCurrencyCode } from '../../selectors.js'
+import { convertCurrency, getSceneState, getSelectedCurrencyCode } from '../../selectors.js'
 import { getExchangeDenomination } from '../../Settings/selectors.js'
 
 export type GuiMakeSpendInfo = {
@@ -153,7 +151,6 @@ export const getAuthRequired = (state: State, spendInfo: EdgeSpendInfo): AuthTyp
   if (!currencyCode || !nativeAmount) throw new Error('Invalid Spend Request')
 
   const { spendingLimits } = state.ui.settings
-  const account = getAccount(state)
   const isoFiatCurrencyCode = state.ui.settings.defaultIsoFiat
   const nativeToExchangeRatio = getExchangeDenomination(state, currencyCode).multiplier
   const exchangeAmount = convertNativeToExchange(nativeToExchangeRatio)(nativeAmount)

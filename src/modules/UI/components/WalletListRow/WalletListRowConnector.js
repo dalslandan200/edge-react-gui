@@ -1,7 +1,6 @@
 // @flow
 import { connect } from 'react-redux'
 
-import { getCurrencyConverter } from '../../../Core/selectors.js'
 import type { Dispatch, State } from '../../../ReduxTypes'
 import { calculateWalletFiatFromCrypto } from '../../../utils.js'
 import { getDisplayDenomination, getExchangeDenomination } from '../../Settings/selectors.js'
@@ -13,7 +12,6 @@ const mapStateToProps = (state: State, ownProps: WalletListRowOwnProps): WalletL
   const exchangeDenomination = getExchangeDenomination(state, ownProps.wallet.currencyCode)
   const settings = state.ui.settings
   const fiatBalance = calculateWalletFiatFromCrypto(ownProps.wallet, state)
-  const currencyConverter = getCurrencyConverter(state)
   return {
     displayDenomination,
     exchangeDenomination,

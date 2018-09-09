@@ -3,10 +3,9 @@
 import { errorNames } from 'edge-core-js'
 import { connect } from 'react-redux'
 
-import { getCurrencyConverter  } from '../../../Core/selectors.js'
 import type { Dispatch, State } from '../../../ReduxTypes'
 import { convertNativeToExchange } from '../../../utils'
-import { getExchangeDenomination, getSelectedCurrencyCode, getSelectedWallet, getExchangeRate, convertCurrency } from '../../selectors.js'
+import { getExchangeDenomination, getExchangeRate, getSelectedCurrencyCode, getSelectedWallet } from '../../selectors.js'
 import { getDisplayDenomination, getExchangeDenomination as settingsGetExchangeDenomination } from '../../Settings/selectors.js'
 import { newPin, reset, signBroadcastAndSave, uniqueIdentifierUpdated, updateAmount, updateSpendPending } from './action.js'
 import { activated as uniqueIdentifierModalActivated } from './components/UniqueIdentifierModal/UniqueIdentifierModalActions.js'
@@ -18,7 +17,6 @@ const mapStateToProps = (state: State): SendConfirmationStateProps => {
   const sceneState = state.ui.scenes.sendConfirmation
   let fiatPerCrypto = 0
   let secondaryExchangeCurrencyCode = ''
-  const currencyConverter = getCurrencyConverter(state)
   const guiWallet = getSelectedWallet(state)
   const currencyCode = getSelectedCurrencyCode(state)
   const balanceInCrypto = guiWallet.nativeBalances[currencyCode]
@@ -26,8 +24,8 @@ const mapStateToProps = (state: State): SendConfirmationStateProps => {
   const isoFiatCurrencyCode = guiWallet.isoFiatCurrencyCode
   const exchangeDenomination = settingsGetExchangeDenomination(state, currencyCode)
   const balanceInCryptoDisplay = convertNativeToExchange(exchangeDenomination.multiplier)(balanceInCrypto)
-  fiatPerCrypto = getExchangeRate(state, currencyCode, isoFiatCurrencyCode)  
-  const balanceInFiat = fiatPerCrypto *  balanceInCryptoDisplay
+  fiatPerCrypto = getExchangeRate(state, currencyCode, isoFiatCurrencyCode)
+  const balanceInFiat = fiatPerCrypto * parseFloat(balanceInCryptoDisplay)
 
   if (guiWallet) {
     const isoFiatCurrencyCode = guiWallet.isoFiatCurrencyCode
@@ -58,7 +56,6 @@ const mapStateToProps = (state: State): SendConfirmationStateProps => {
     balanceInCrypto,
     balanceInFiat,
     currencyCode,
-    currencyConverter,
     destination,
     errorMsg,
     exchangeRates,

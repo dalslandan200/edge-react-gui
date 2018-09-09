@@ -31,7 +31,6 @@ const mapStateToProps = (state: State) => {
   const balanceInCrypto = wallet.nativeBalances[currencyCode]
   const numTransactions = state.ui.scenes.transactionList.numTransactions
   const settings = SETTINGS_SELECTORS.getSettings(state)
-  const currencyConverter = CORE_SELECTORS.getCurrencyConverter(state)
   const transactions = UI_SELECTORS.getTransactions(state)
   const index = SETTINGS_SELECTORS.getDisplayDenominationKey(state, currencyCode)
   const denominationsOnWallet = wallet.allDenominations[currencyCode]
@@ -52,7 +51,7 @@ const mapStateToProps = (state: State) => {
   const exchangeDenomination = SETTINGS_SELECTORS.getExchangeDenomination(state, currencyCode)
   // $FlowFixMe
   const balanceInCryptoDisplay = UTILS.convertNativeToExchange(exchangeDenomination.multiplier)(balanceInCrypto)
-  const balanceInFiat = UI_SELECTORS.convertCurrency(state, currencyCode, isoFiatCurrencyCode, balanceInCryptoDisplay)
+  const balanceInFiat = UI_SELECTORS.convertCurrency(state, currencyCode, isoFiatCurrencyCode, parseFloat(balanceInCryptoDisplay))
   const displayDenomination = SETTINGS_SELECTORS.getDisplayDenomination(state, currencyCode)
   const currencyInfo: EdgeCurrencyInfo = coreWallet.currencyInfo
   // set default requiredConfirmations to 1, so once the tx is in a block consider fully confirmed
@@ -74,7 +73,6 @@ const mapStateToProps = (state: State) => {
     settings,
     balanceInCrypto,
     balanceInFiat,
-    currencyConverter,
     multiplier,
     contacts: state.contacts,
     fiatSymbol,
