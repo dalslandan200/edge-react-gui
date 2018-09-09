@@ -110,25 +110,27 @@ export const buildExchangeRates = async state => {
     exchangeRateKeys.push(`${walletFiat}_${currencyCode}`, `${currencyCode}_${walletFiat}`, `${accountFiat}_${currencyCode}`, `${currencyCode}_${accountFiat}`)
     // now add tokens, if they exist
     for (const tokenCode in wallet.balances) {
-      data[`${walletFiat}_${tokenCode}`] = fetchExchangeRateFromCore(state, walletIsoFiat, tokenCode)
-      data[`${tokenCode}_${walletFiat}`] = fetchExchangeRateFromCore(state, tokenCode, walletIsoFiat)
-      data[`${accountFiat}_${tokenCode}`] = fetchExchangeRateFromCore(state, accountIsoFiat, tokenCode)
-      data[`${tokenCode}_${accountFiat}`] = fetchExchangeRateFromCore(state, tokenCode, accountIsoFiat)
-      promiseArray.push(
-        data[`${walletFiat}_${tokenCode}`],
-        data[`${tokenCode}_${walletFiat}`],
-        data[`${accountFiat}_${currencyCode}`],
-        data[`${currencyCode}_${accountFiat}`]
-      )
-      exchangeRateKeys.push(`${walletFiat}_${tokenCode}`, `${tokenCode}_${walletFiat}`, `${accountFiat}_${currencyCode}`, `${currencyCode}_${accountFiat}`)
+      if (tokenCode !== currencyCode) {
+        data[`${walletFiat}_${tokenCode}`] = fetchExchangeRateFromCore(state, walletIsoFiat, tokenCode)
+        data[`${tokenCode}_${walletFiat}`] = fetchExchangeRateFromCore(state, tokenCode, walletIsoFiat)
+        data[`${accountFiat}_${tokenCode}`] = fetchExchangeRateFromCore(state, accountIsoFiat, tokenCode)
+        data[`${tokenCode}_${accountFiat}`] = fetchExchangeRateFromCore(state, tokenCode, accountIsoFiat)
+        promiseArray.push(
+          data[`${walletFiat}_${tokenCode}`],
+          data[`${tokenCode}_${walletFiat}`],
+          data[`${accountFiat}_${tokenCode}`],
+          data[`${tokenCode}_${accountFiat}`]
+        )
+        exchangeRateKeys.push(`${walletFiat}_${tokenCode}`, `${tokenCode}_${walletFiat}`, `${accountFiat}_${tokenCode}`, `${tokenCode}_${accountFiat}`)
+      }
     }
   }
   const rates = await Promise.all(promiseArray)
   for (let i = 0; i < rates.length; i++) {
-    data[exchangeRateKeys[i]] = rates[i]
+    const exchangeRateKey = exchangeRateKeys[i]
+    const rate = rates[i]
+    data[exchangeRateKey] = rate
   }
-  data.randomNumber = Math.random()
-  console.log('rates is: ', data)
   return data
 }
 

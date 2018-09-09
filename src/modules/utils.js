@@ -10,6 +10,7 @@ import { intl } from '../locales/intl.js'
 import borderColors from '../theme/variables/css3Colors'
 import type { CustomTokenInfo, ExchangeData, GuiDenomination, GuiWallet } from '../types'
 import { getCurrencyConverter } from './Core/selectors.js'
+import { getDefaultIsoFiat } from './UI/Settings/selectors.js'
 import type { State } from './ReduxTypes'
 
 export const DIVIDE_PRECISION = 18
@@ -652,9 +653,9 @@ export const getTotalFiatAmount = (state: State) => {
 
 export const calculateTotalFiatBalance = (values: any, state: State) => {
   let total = 0
-  const currencyConverter = getCurrencyConverter(state)
+  const settingsDefaultIsoFiat = getDefaultIsoFiat(state)
   for (const currency in values) {
-    const addValue = convertCurrency(state, currency, 'iso:USD', values[currency])
+    const addValue = convertCurrency(state, currency, settingsDefaultIsoFiat, values[currency])
     total = total + addValue
   }
   return intl.formatNumber(total, { toFixed: 2 })

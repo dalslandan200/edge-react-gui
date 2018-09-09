@@ -5,6 +5,7 @@ import React, { Component } from 'react'
 import { TouchableHighlight, View } from 'react-native'
 
 import { intl } from '../../../../locales/intl.js'
+import { getFiatSymbol } from '../../../utils.js'
 import type { CurrencyConverter, GuiWallet } from '../../../../types.js'
 import Text from '../FormattedText'
 import { styles, stylesRaw } from './WalletListRowStyle.js'
@@ -27,7 +28,7 @@ export type WalletListTokenRowProps = WalletListTokenRowOwnProps & WalletListTok
 
 export class WalletListTokenRowComponent extends Component<WalletListTokenRowProps> {
   render () {
-    const { settings, wallet, onSelectWallet, currencyCode, fiatValue } = this.props
+    const { settings, wallet, onSelectWallet, currencyCode, fiatValue, cryptoAmount } = this.props
     const parentId = wallet.id
     const fiatBalance = intl.formatNumber(fiatValue, { toFixed: 2 }) || '0'
     const fiatSymbol = getFiatSymbol(wallet.isoFiatCurrencyCode) || ''
