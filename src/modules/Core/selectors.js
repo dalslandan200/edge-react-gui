@@ -95,33 +95,19 @@ export const buildExchangeRates = async (state: State) => {
     const walletFiat = wallet.fiatCurrencyCode.replace('iso:', '')
     const currencyCode = wallet.currencyInfo.currencyCode // should get GUI or core versions?
     // need to get both forward and backwards exchange rates for wallets & account fiats, for each parent currency AND each token
-    data[`${walletFiat}_${currencyCode}`] = fetchExchangeRateFromCore(state, walletIsoFiat, currencyCode)
     data[`${currencyCode}_${walletFiat}`] = fetchExchangeRateFromCore(state, currencyCode, walletIsoFiat)
-    data[`${accountFiat}_${currencyCode}`] = fetchExchangeRateFromCore(state, accountIsoFiat, currencyCode)
     data[`${currencyCode}_${accountFiat}`] = fetchExchangeRateFromCore(state, currencyCode, accountIsoFiat)
     // add them to the list of promises to resolve
-    promiseArray.push(
-      data[`${walletFiat}_${currencyCode}`],
-      data[`${currencyCode}_${walletFiat}`],
-      data[`${accountFiat}_${currencyCode}`],
-      data[`${currencyCode}_${accountFiat}`]
-    )
+    promiseArray.push(data[`${currencyCode}_${walletFiat}`], data[`${currencyCode}_${accountFiat}`])
     // keep track of the exchange rates
-    exchangeRateKeys.push(`${walletFiat}_${currencyCode}`, `${currencyCode}_${walletFiat}`, `${accountFiat}_${currencyCode}`, `${currencyCode}_${accountFiat}`)
+    exchangeRateKeys.push(`${currencyCode}_${walletFiat}`, `${currencyCode}_${accountFiat}`)
     // now add tokens, if they exist
     for (const tokenCode in wallet.balances) {
       if (tokenCode !== currencyCode) {
-        data[`${walletFiat}_${tokenCode}`] = fetchExchangeRateFromCore(state, walletIsoFiat, tokenCode)
         data[`${tokenCode}_${walletFiat}`] = fetchExchangeRateFromCore(state, tokenCode, walletIsoFiat)
-        data[`${accountFiat}_${tokenCode}`] = fetchExchangeRateFromCore(state, accountIsoFiat, tokenCode)
         data[`${tokenCode}_${accountFiat}`] = fetchExchangeRateFromCore(state, tokenCode, accountIsoFiat)
-        promiseArray.push(
-          data[`${walletFiat}_${tokenCode}`],
-          data[`${tokenCode}_${walletFiat}`],
-          data[`${accountFiat}_${tokenCode}`],
-          data[`${tokenCode}_${accountFiat}`]
-        )
-        exchangeRateKeys.push(`${walletFiat}_${tokenCode}`, `${tokenCode}_${walletFiat}`, `${accountFiat}_${tokenCode}`, `${tokenCode}_${accountFiat}`)
+        promiseArray.push(data[`${tokenCode}_${walletFiat}`], data[`${tokenCode}_${accountFiat}`])
+        exchangeRateKeys.push(`${tokenCode}_${walletFiat}`, `${tokenCode}_${accountFiat}`)
       }
     }
   }
@@ -130,6 +116,14 @@ export const buildExchangeRates = async (state: State) => {
     const exchangeRateKey = exchangeRateKeys[i]
     const rate = rates[i]
     data[exchangeRateKey] = rate
+    const codes = exchangeRateKey.split('_')
+    const reverseExchangeRateKey = `${codes[1]}_${codes[0]}`
+    if (rate !== 0) {
+      // if it's a real rate and can be multiplicatively inverted
+      data[reverseExchangeRateKey] = 1 / rate
+    } else {
+      data[reverseExchangeRateKey] = 0
+    }
   }
   return data
 }
