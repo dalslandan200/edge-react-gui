@@ -605,7 +605,7 @@ export const isEdgeLogin = (data: string) => {
   return EDGE_LOGIN_REG_EXP.test(data)
 }
 
-export const getTotalFiatAmount = (state: State) => {
+export const getTotalFiatAmount = (state: State, isoFiatCurrencyCode?: string) => {
   const temporaryTotalCrypto = {}
   const wallets = state.ui.wallets.byId
   const settings = state.ui.settings
@@ -644,15 +644,17 @@ export const getTotalFiatAmount = (state: State) => {
       }
     }
   }
-  const balanceInfo = calculateTotalFiatBalance(temporaryTotalCrypto, state)
+  const balanceInfo = calculateTotalFiatBalance(temporaryTotalCrypto, state, isoFiatCurrencyCode)
   return balanceInfo
 }
 
-export const calculateTotalFiatBalance = (values: any, state: State) => {
+export const calculateTotalFiatBalance = (values: any, state: State, isoFiatCurrencyCode?: string) => {
   let total = 0
-  const settingsDefaultIsoFiat = getDefaultIsoFiat(state)
+  // if calculating total balance for password recovery reminder, then use iso:USD that was passed in
+  // otherwise grab the default from the account
+  const isoFiat = isoFiatCurrencyCode || getDefaultIsoFiat(state)
   for (const currency in values) {
-    const addValue = convertCurrency(state, currency, settingsDefaultIsoFiat, values[currency])
+    const addValue = convertCurrency(state, currency, isoFiat, values[currency])
     total = total + addValue
   }
   return intl.formatNumber(total, { toFixed: 2 })
