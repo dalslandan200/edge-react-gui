@@ -2,7 +2,7 @@
 import { connect } from 'react-redux'
 
 import type { Dispatch, State } from '../../../ReduxTypes'
-import { calculateWalletFiatFromCrypto } from '../../../utils.js'
+import { calculateWalletFiatBalance } from '../../selectors.js'
 import { getDisplayDenomination, getExchangeDenomination } from '../../Settings/selectors.js'
 import { WalletListRowComponent } from './WalletListRow.ui.js'
 import type { WalletListRowDispatchProps, WalletListRowOwnProps, WalletListRowStateProps } from './WalletListRow.ui.js'
@@ -11,7 +11,7 @@ const mapStateToProps = (state: State, ownProps: WalletListRowOwnProps): WalletL
   const displayDenomination = getDisplayDenomination(state, ownProps.wallet.currencyCode)
   const exchangeDenomination = getExchangeDenomination(state, ownProps.wallet.currencyCode)
   const settings = state.ui.settings
-  const fiatBalance = calculateWalletFiatFromCrypto(ownProps.wallet, state)
+  const fiatBalance = calculateWalletFiatBalance(ownProps.wallet, state)
   return {
     displayDenomination,
     exchangeDenomination,

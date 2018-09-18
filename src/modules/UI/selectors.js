@@ -2,8 +2,10 @@
 
 import _ from 'lodash'
 
+import { intl } from '../../locales/intl.js'
 import type { GuiDenomination, GuiWallet, TransactionListTx } from '../../types'
 import type { State } from '../ReduxTypes'
+import { convertNativeToExchange } from '../utils.js'
 import * as SETTINGS_SELECTORS from './Settings/selectors'
 
 export const getWallets = (state: State) => {
@@ -114,12 +116,9 @@ export const getSceneState = (state: State, sceneKey: string) => {
 }
 
 export const getExchangeRate = (state: State, fromCurrencyCode: string, toCurrencyCode: string): number => {
-  const fromCurrencyCleaned = fromCurrencyCode.replace('iso:', '')
-  const toCurrencyCleaned = toCurrencyCode.replace('iso:', '')
   const exchangeRates = state.exchangeRates
-  const rateKey = `${fromCurrencyCleaned}_${toCurrencyCleaned}`
+  const rateKey = `${fromCurrencyCode}_${toCurrencyCode}`
   const rate = exchangeRates[rateKey] ? exchangeRates[rateKey] : 0
-  // if (fromCurrencyCleaned === toCurrencyCleaned) rate = 1 // handle case that occurs while app is loading
   return rate
 }
 
@@ -130,11 +129,41 @@ export const convertCurrency = (state: State, fromCurrencyCode: string, toCurren
 }
 
 export const convertCurrencyFromExchangeRates = (exchangeRates: { [string]: number }, fromCurrencyCode: string, toCurrencyCode: string, amount: number) => {
-  const fromCurrencyCleaned = fromCurrencyCode.replace('iso:', '')
-  const toCurrencyCleaned = fromCurrencyCode.replace('iso:', '')
   if (!exchangeRates) return 0 // handle case of exchange rates not ready yet
-  const rateKey = `${fromCurrencyCleaned}_${toCurrencyCleaned}`
+  const rateKey = `${fromCurrencyCode}_${toCurrencyCode}`
   const rate = exchangeRates[rateKey]
   const convertedAmount = amount * rate
   return convertedAmount
+}
+
+// not sure if this can be used with tokens
+export const calculateSettingsFiatBalance = (wallet: GuiWallet, state: State): string => {
+  let fiatValue = 0 // default to zero if not calculable
+  const currencyCode = wallet.currencyCode
+  const nativeBalance = wallet.nativeBalances[currencyCode]
+  const settings = state.ui.settings
+  if (!nativeBalance || nativeBalance === '0') return '0'
+  const denominations = settings[currencyCode].denominations
+  const exchangeDenomination = denominations.find(denomination => denomination.name === currencyCode)
+  if (!exchangeDenomination) return '0'
+  const nativeToExchangeRatio: string = exchangeDenomination.multiplier
+  const cryptoAmount: number = parseFloat(convertNativeToExchange(nativeToExchangeRatio)(nativeBalance))
+  fiatValue = convertCurrency(state, currencyCode, settings.defaultIsoFiat, cryptoAmount)
+  return intl.formatNumber(fiatValue, { toFixed: 2 }) || '0'
+}
+
+// not sure if this can be used with tokens
+export const calculateWalletFiatBalance = (wallet: GuiWallet, state: State): string => {
+  let fiatValue = 0 // default to zero if not calculable
+  const currencyCode = wallet.currencyCode
+  const nativeBalance = wallet.nativeBalances[currencyCode]
+  const settings = state.ui.settings
+  if (!nativeBalance || nativeBalance === '0') return '0'
+  const denominations = settings[currencyCode].denominations
+  const exchangeDenomination = denominations.find(denomination => denomination.name === currencyCode)
+  if (!exchangeDenomination) return '0'
+  const nativeToExchangeRatio: string = exchangeDenomination.multiplier
+  const cryptoAmount: number = parseFloat(convertNativeToExchange(nativeToExchangeRatio)(nativeBalance))
+  fiatValue = convertCurrency(state, currencyCode, wallet.isoFiatCurrencyCode, cryptoAmount)
+  return intl.formatNumber(fiatValue, { toFixed: 2 }) || '0'
 }
