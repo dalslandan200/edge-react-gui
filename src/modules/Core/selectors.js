@@ -4,7 +4,7 @@ import type { EdgeCurrencyWallet } from 'edge-core-js'
 
 import type { State } from '../ReduxTypes'
 import { convertCurrency } from '../UI/selectors.js'
-import { getDefaultFiat, getDefaultIsoFiat } from '../UI/Settings/selectors.js'
+import { getDefaultIsoFiat } from '../UI/Settings/selectors.js'
 
 export const getCore = (state: State) => state.core
 
@@ -83,49 +83,49 @@ export const getBalanceInCrypto = (state: State, walletId: string, currencyCode:
 
 export const buildExchangeRates = async (state: State) => {
   const wallets = getWallets(state)
-  const accountFiat = getDefaultFiat(state)
   const accountIsoFiat = getDefaultIsoFiat(state)
   const walletIds = Object.keys(wallets)
-  const data = {}
-  const promiseArray = []
-  const exchangeRateKeys = []
+  const exchangeRates = {}
+  const finalExchangeRates = {}
   for (const id of walletIds) {
     const wallet = wallets[id]
     const walletIsoFiat = wallet.fiatCurrencyCode
-    const walletFiat = wallet.fiatCurrencyCode.replace('iso:', '')
     const currencyCode = wallet.currencyInfo.currencyCode // should get GUI or core versions?
     // need to get both forward and backwards exchange rates for wallets & account fiats, for each parent currency AND each token
-    data[`${currencyCode}_${walletFiat}`] = fetchExchangeRateFromCore(state, currencyCode, walletIsoFiat)
-    data[`${currencyCode}_${accountFiat}`] = fetchExchangeRateFromCore(state, currencyCode, accountIsoFiat)
+    exchangeRates[`${currencyCode}_${walletIsoFiat}`] = fetchExchangeRateFromCore(state, currencyCode, walletIsoFiat)
+    exchangeRates[`${currencyCode}_${accountIsoFiat}`] = fetchExchangeRateFromCore(state, currencyCode, accountIsoFiat)
     // add them to the list of promises to resolve
-    promiseArray.push(data[`${currencyCode}_${walletFiat}`], data[`${currencyCode}_${accountFiat}`])
     // keep track of the exchange rates
-    exchangeRateKeys.push(`${currencyCode}_${walletFiat}`, `${currencyCode}_${accountFiat}`)
     // now add tokens, if they exist
     for (const tokenCode in wallet.balances) {
       if (tokenCode !== currencyCode) {
-        data[`${tokenCode}_${walletFiat}`] = fetchExchangeRateFromCore(state, tokenCode, walletIsoFiat)
-        data[`${tokenCode}_${accountFiat}`] = fetchExchangeRateFromCore(state, tokenCode, accountIsoFiat)
-        promiseArray.push(data[`${tokenCode}_${walletFiat}`], data[`${tokenCode}_${accountFiat}`])
-        exchangeRateKeys.push(`${tokenCode}_${walletFiat}`, `${tokenCode}_${accountFiat}`)
+        exchangeRates[`${tokenCode}_${walletIsoFiat}`] = fetchExchangeRateFromCore(state, tokenCode, walletIsoFiat)
+        exchangeRates[`${tokenCode}_${accountIsoFiat}`] = fetchExchangeRateFromCore(state, tokenCode, accountIsoFiat)
       }
     }
   }
-  const rates = await Promise.all(promiseArray)
-  for (let i = 0; i < rates.length; i++) {
-    const exchangeRateKey = exchangeRateKeys[i]
+  const exchangeRateKeys = Object.keys(exchangeRates)
+  const exchangeRatePromises = Object.values(exchangeRates)
+  const rates = await Promise.all(exchangeRatePromises)
+  for (let i = 0; i < exchangeRateKeys.length; i++) {
     const rate = rates[i]
-    data[exchangeRateKey] = rate
-    const codes = exchangeRateKey.split('_')
+    const key = exchangeRateKeys[i]
+    const codes = key.split('_')
     const reverseExchangeRateKey = `${codes[1]}_${codes[0]}`
-    if (rate !== 0) {
-      // if it's a real rate and can be multiplicatively inverted
-      data[reverseExchangeRateKey] = 1 / rate
+    if (isNaN(rate)) {
+      finalExchangeRates[key] = 0
+      finalExchangeRates[reverseExchangeRateKey] = 0
     } else {
-      data[reverseExchangeRateKey] = 0
+      finalExchangeRates[key] = rate
+      if (rate !== 0) {
+        // if it's a real rate and can be multiplicatively inverted
+        finalExchangeRates[reverseExchangeRateKey] = 1 / parseFloat(rate)
+      } else {
+        finalExchangeRates[reverseExchangeRateKey] = 0
+      }
     }
   }
-  return data
+  return finalExchangeRates
 }
 
 export const fetchExchangeRateFromCore = (state: State, fromCurrencyCode: string, toCurrencyCode: string): Promise<number> => {
